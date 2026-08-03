@@ -46,7 +46,63 @@ const submitForm = async () => {
 		isLoading.value = false;
 		notyf.error('An error occurred while sending the message. Please try again later.');
 	}
+	finally{
+		resetRecaptcha();
+	}
 };
+
+const SITE_KEY = '6LeJB3MtAAAAAP6k9AiYyq3_Kv01kh0X9VcwU3kp';  // Replace with your site key
+
+const recaptchaContainer = ref(null);
+const recaptchaWidgetId = ref(null);
+const recaptchaToken = ref('');
+
+// Callback called by reCAPTCHA when successful
+function onRecaptchaSuccess(token) {
+  recaptchaToken.value = token;
+}
+
+// Callback when expired
+function onRecaptchaExpired() {
+  recaptchaToken.value = '';
+}
+
+// Function to render the reCAPTCHA widget
+function renderRecaptcha() {
+  if (!window.grecaptcha) {
+    console.error('reCAPTCHA not loaded');
+    return;
+  }
+
+  recaptchaWidgetId.value = window.grecaptcha.render(recaptchaContainer.value, {
+    sitekey: SITE_KEY,
+    size: 'normal', // or 'compact'
+    callback: onRecaptchaSuccess,
+    'expired-callback': onRecaptchaExpired,
+  });
+}
+
+// Function to reset reCAPTCHA 
+function resetRecaptcha() {
+  if (recaptchaWidgetId.value !== null) {
+    window.grecaptcha.reset(recaptchaWidgetId.value);
+    recaptchaToken.value = '';
+  }
+}
+
+onMounted(() => {
+  const interval = setInterval(() => {
+	if (window.grecaptcha && window.grecaptcha.render) {
+	  renderRecaptcha();
+	  clearInterval(interval);
+	}
+  }, 1000);
+
+  onBeforeUnmount(() => {
+	clearInterval(interval);
+  });
+});
+
 </script>
 
 <template>
@@ -81,6 +137,10 @@ const submitForm = async () => {
 							<a href="https://github.com/cbabbage0991" id="github"><i class="fab fa-github"></i></a>
 						</div>
 						<button type="submit" class="submit-btn pl-5 pr-5">Submit</button>
+
+						<div class="d-flex justify-content-center mt-2">
+							<div ref="recaptchaContainer"></div>
+						</div>
 					</div>
 				</form>
 			</div>
