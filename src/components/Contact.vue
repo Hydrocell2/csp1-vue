@@ -15,6 +15,10 @@ const WEB3FORMS_ACCESS_KEY = 'ac8f8176-4385-41a2-b8ef-f3f86616352f';
 const subject = 'Web Portfolio Received Message';
 
 const submitForm = async () => {
+	if (!recaptchaToken.value) {
+		notyf.error('Please complete the reCAPTCHA.');
+		return;
+	}
 	try {
 		const response = await fetch('https://api.web3forms.com/submit', {
 			method: 'POST',
@@ -28,6 +32,7 @@ const submitForm = async () => {
 				name: name.value,
 				email: email.value,
 				message: message.value,
+				recaptcha_response: recaptchaToken.value,
 			})
 		})
 		const result = await response.json();
