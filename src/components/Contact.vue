@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Notyf } from 'notyf';
 import 'notyf/notyf.min.css';
 
@@ -90,17 +90,19 @@ function resetRecaptcha() {
   }
 }
 
+let recaptchaPollInterval = null;
+
 onMounted(() => {
-  const interval = setInterval(() => {
+  recaptchaPollInterval = setInterval(() => {
 	if (window.grecaptcha && window.grecaptcha.render) {
 	  renderRecaptcha();
-	  clearInterval(interval);
+	  clearInterval(recaptchaPollInterval);
 	}
   }, 1000);
+});
 
-  onBeforeUnmount(() => {
-	clearInterval(interval);
-  });
+onBeforeUnmount(() => {
+  clearInterval(recaptchaPollInterval);
 });
 
 </script>
